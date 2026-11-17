@@ -27,3 +27,6 @@ export const ChevronIcon = () => (
 export const ArrowUpIcon = () => (
   <svg viewBox="0 0 24 24" {...s} strokeWidth={2.2} aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
 );
+export const LaterIcon = () => (
+  <svg viewBox="0 0 24 24" {...s} strokeWidth={1.9} aria-hidden="true"><path d="M4 13h4.5l1.5 2.5h4l1.5-2.5H20M4 13l2.2-6.5a1.5 1.5 0 0 1 1.4-1h8.8a1.5 1.5 0 0 1 1.4 1L20 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" /></svg>
+);

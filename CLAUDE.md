@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-ToDoMe: a personal, single-user to-do notebook. One page, three views (Today, Upcoming, Notebook), quick capture that reads dates/times/repeats out of plain text. Works on phone (installed to home screen) and laptop, synced.
+ToDoMe: a personal, single-user to-do notebook. One page, three views (Today, Upcoming, Later), quick capture that reads dates/times/repeats out of plain text. Works on phone (installed to home screen) and laptop, synced.
 
 ## Principles (from the owner)
 
@@ -26,7 +26,7 @@ ToDoMe: a personal, single-user to-do notebook. One page, three views (Today, Up
 ## How it works
 
 - `src/lib/parse.ts` — natural-language capture ("call dentist tomorrow 9am", "water plants every sunday", "pay rent nov 30", "someday"). Short weekday names only count after on/next/every. Add a test for every new phrase.
-- `src/lib/items.ts` — the `Item` model and the upkeep rules: dated items appear on Today on their day; missed items carry over for `CARRY_OVER_DAYS` (7) then drop back to the Notebook; repeats collapse to their latest occurrence; completing a repeat advances it and stores a done copy.
+- `src/lib/items.ts` — the `Item` model and the upkeep rules: anything written without a date goes straight on Today; dated items join Today on their day; missed items carry over and stay until done; anything on Today longer than `FOLD_AFTER_DAYS` (14) folds into a collapsed "Been a while" section; "someday" parks an item in Later (`later: true`); repeats collapse to their latest occurrence; completing a repeat advances it and stores a done copy.
 - `src/lib/store.ts` — local-first store (localStorage) + background sync. Each change bumps `updatedAt`; server keeps the newest per item (last write wins) and gives every write a `seq`; devices pull `seq > cursor`. Deletes are tombstones (`deleted: true`).
 - Auth: one password in the Worker secret `APP_PASSWORD`; login sets a long-lived HttpOnly cookie derived from it (changing the password signs out every device).
 - `public/sw.js` — service worker: app opens instantly/offline from cache, refreshes in the background.

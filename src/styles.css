@@ -133,8 +133,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   .capture { max-width: var(--col); margin: 0 auto; }
 }
+.foot .sync { display: none; }
 @media (min-width: 720px) {
-  .page { padding-top: calc(56px + env(safe-area-inset-top, 0px)); }
+  .page { padding-top: calc(56px + env(safe-area-inset-top, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .page > * { grid-column: 1 / -1; }
+  /* Laptop: the tabs sit beside the date, writing goes underneath, one list at a time. */
+  .page > .head { grid-column: 1; grid-row: 1; }
+  .page > .tabs { grid-column: 2; grid-row: 1; align-self: end; border-bottom: 0; }
+  .head .sync { display: none; }
+  .foot .sync { display: inline-flex; }
   .day { font-size: 38px; }
   .capture-wrap { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); }
   .kbd-hint { display: flex; }
@@ -147,11 +154,25 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   display: flex; justify-content: space-between; align-items: baseline; padding: 14px 4px 6px;
 }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.item {
+.item { position: relative; border-radius: 12px; transition: opacity 0.22s, transform 0.22s; }
+.row {
   display: flex; align-items: flex-start; gap: 12px; padding: 10px 6px 10px 4px; border-radius: 12px;
-  transition: background 0.15s, opacity 0.22s, transform 0.22s;
+  transition: background 0.15s; touch-action: pan-y; position: relative;
 }
-@media (hover: hover) { .item:hover { background: color-mix(in srgb, var(--sheet) 70%, transparent); } }
+@media (hover: hover) { .item:hover .row { background: color-mix(in srgb, var(--sheet) 70%, transparent); } }
+.item.swiping { overflow: hidden; }
+.item.swiping .row { background: var(--sheet); box-shadow: var(--shadow); }
+
+/* What a swipe will do, showing under the row as it slides. Right: the row's move; left: delete. */
+.swipe-under {
+  position: absolute; inset: 0; border-radius: 12px; display: flex; align-items: center; padding: 0 18px;
+  font-size: 14px; font-weight: 600; color: var(--ink-2); background: var(--rule); transition: background 0.15s, color 0.15s;
+}
+.swipe-under span { display: inline-flex; align-items: center; gap: 8px; }
+.swipe-under svg { width: 18px; height: 18px; }
+.swipe-under.left { justify-content: flex-end; }
+.swipe-under.right.armed { background: var(--accent); color: var(--sheet); }
+.swipe-under.left.armed { background: var(--danger); color: var(--sheet); }
 .item.enter { animation: slideIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .item.leaving { opacity: 0; transform: translateX(10px); }
 
@@ -193,7 +214,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 .actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; flex: none; margin-top: -5px; }
 .item:hover .actions, .item:focus-within .actions { opacity: 1; }
-@media (hover: none) { .actions { opacity: 1; } }
+@media (hover: none) { .actions { display: none; } } /* phones swipe instead */
 .act { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: var(--muted); }
 @media (hover: hover) { .act:hover { background: var(--accent-soft); color: var(--ink); } .act.del:hover { color: var(--danger); } }
 .act svg { width: 17px; height: 17px; }
