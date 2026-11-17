@@ -322,6 +322,7 @@ export function App() {
 
       <footer className="foot">
         <span>ToDoMe</span>
+        <SyncBadge status={status} />
         <button onClick={() => void signOut()}>Sign out of this device</button>
       </footer>
 
