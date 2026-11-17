@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { formatDay, formatShortDate, formatTime, type DateStr } from "../lib/dates";
-import { effectiveDue, isStale, type Item } from "../lib/items";
+import { formatDay, formatTime, type DateStr } from "../lib/dates";
+import { effectiveDue, type Item } from "../lib/items";
 import { repeatLabel } from "../lib/repeat";
-import { CalendarIcon, CheckIcon, ClockIcon, HighlighterIcon, RepeatIcon, TrashIcon } from "./icons";
+import { ArrowUpIcon, CalendarIcon, CheckIcon, ClockIcon, HighlighterIcon, LaterIcon, RepeatIcon, TrashIcon } from "./icons";
 
 interface Props {
   item: Item;
@@ -11,16 +11,20 @@ interface Props {
   isNew?: boolean;
   onToggle: (it: Item) => void;
   onPin: (it: Item) => void;
+  onPark: (it: Item) => void;
+  onUnpark: (it: Item) => void;
   onDelete: (it: Item) => void;
   onEdit: (it: Item, raw: string) => void;
 }
 
-export function ItemRow({ item, today, showDate = true, isNew, onToggle, onPin, onDelete, onEdit }: Props) {
+export function ItemRow({ item, today, showDate = true, isNew, onToggle, onPin, onPark, onUnpark, onDelete, onEdit }: Props) {
   const [checking, setChecking] = useState(false);
   const [draft, setDraft] = useState<string | null>(null); // non-null while editing
   const done = item.done || checking;
   const due = effectiveDue(item, today);
-  const stale = !item.done && isStale(item, today);
+  // What the one row action does: bring a parked item back, highlight a future one for today,
+  // or set something on Today aside for later.
+  const future = !!due && due > today;
 
   const toggle = () => {
     if (item.done) return onToggle(item);
@@ -69,8 +73,7 @@ export function ItemRow({ item, today, showDate = true, isNew, onToggle, onPin, 
         )}
         {(due || item.time || item.repeat) && (
           <div className="meta">
-            {due && stale && <span>Was due {formatShortDate(due)}</span>}
-            {due && !stale && showDate && (
+            {due && showDate && (
               <span className={!item.done && due < today ? "late" : undefined}>
                 <CalendarIcon />
                 {formatDay(due, today)}
@@ -92,7 +95,12 @@ export function ItemRow({ item, today, showDate = true, isNew, onToggle, onPin, 
         )}
       </div>
       <div className="actions">
-        {!item.done && (
+        {!item.done && item.later && (
+          <button className="act" onClick={() => onUnpark(item)} aria-label="Move to Today" title="Move to Today">
+            <ArrowUpIcon />
+          </button>
+        )}
+        {!item.done && !item.later && (item.pinned || future) && (
           <button
             className={`act${item.pinned ? " on" : ""}`}
             onClick={() => onPin(item)}
@@ -100,6 +108,11 @@ export function ItemRow({ item, today, showDate = true, isNew, onToggle, onPin, 
             title={item.pinned ? "Take off Today" : "Put on Today"}
           >
             <HighlighterIcon on={item.pinned} />
+          </button>
+        )}
+        {!item.done && !item.later && !item.pinned && !future && !item.repeat && (
+          <button className="act" onClick={() => onPark(item)} aria-label="Save for later" title="Save for later">
+            <LaterIcon />
           </button>
         )}
         <button className="act del" onClick={() => onDelete(item)} aria-label="Delete" title="Delete">

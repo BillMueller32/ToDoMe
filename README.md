@@ -2,9 +2,9 @@
 
 A notebook for everything I need to remember to do. Write it down; dates are picked up as you type.
 
-- **Today** fills itself: things dated today, plus anything highlighted. Missed things carry over for a week, then wait quietly in the Notebook.
+- **Today** is the list: anything written without a date, things dated today, and anything highlighted. Missed things carry over and stay until done; after two weeks they fold into a collapsed "Been a while" line.
 - **Upcoming**: everything with a future date, by day.
-- **Notebook**: everything written down, newest at the bottom.
+- **Later**: things set aside on purpose. Write "someday" after something, or use the row's Save for later button.
 
 Try: `call dentist tomorrow 9am` · `water plants every sunday` · `pay rent nov 30` · `stretch every weekday 7:30am` · `learn piano someday`
 

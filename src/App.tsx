@@ -5,12 +5,13 @@ import { ItemRow } from "./components/ItemRow";
 import { Login } from "./components/Login";
 import { formatDay, formatShortDate, fromDateStr, isoWeek, todayStr, type DateStr } from "./lib/dates";
 import {
+  beenAWhile,
   byDueThenTime,
   completeItem,
   doneOn,
   effectiveDue,
-  inNotebook,
   isCarriedOver,
+  onLater,
   onToday,
   onUpcoming,
   type Item,
@@ -18,8 +19,9 @@ import {
 import { parse } from "./lib/parse";
 import { newId, save, signOut, stamp, update, useStore, type SyncStatus } from "./lib/store";
 
-type View = "today" | "upcoming" | "notebook";
-const VIEWS: View[] = ["today", "upcoming", "notebook"];
+type View = "today" | "upcoming" | "later";
+const VIEWS: View[] = ["today", "upcoming", "later"];
+const VIEW_LABEL: Record<View, string> = { today: "Today", upcoming: "Upcoming", later: "Later" };
 const VIEW_KEY = "todome:view";
 
 function useToday(): DateStr {
@@ -54,6 +56,7 @@ export function App() {
     }
   });
   const [showDone, setShowDone] = useState(false);
+  const [showOld, setShowOld] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
   const captureRef = useRef<HTMLInputElement>(null);
@@ -95,11 +98,14 @@ export function App() {
     const live = items.filter((i) => !i.deleted);
     const sort = byDueThenTime(today);
     const todayItems = live.filter((i) => onToday(i, today));
+    const old = todayItems.filter((i) => beenAWhile(i, today));
+    const fresh = todayItems.filter((i) => !beenAWhile(i, today));
     return {
-      carried: todayItems.filter((i) => isCarriedOver(i, today)).sort(sort),
-      today: todayItems.filter((i) => !isCarriedOver(i, today)).sort(sort),
+      carried: fresh.filter((i) => isCarriedOver(i, today)).sort(sort),
+      today: fresh.filter((i) => !isCarriedOver(i, today)).sort(sort),
+      old: old.sort(sort),
       upcoming: live.filter((i) => onUpcoming(i, today)).sort(sort),
-      notebook: live.filter(inNotebook).sort((a, b) => a.createdAt - b.createdAt),
+      later: live.filter(onLater).sort((a, b) => a.createdAt - b.createdAt),
       doneToday: live.filter((i) => doneOn(i, today)).sort((a, b) => b.updatedAt - a.updatedAt),
     };
   }, [items, today]);
@@ -117,6 +123,7 @@ export function App() {
       time: p.time,
       repeat: p.repeat,
       pinned: false,
+      later: p.clearDate,
       done: false,
       doneAt: null,
       createdAt: now,
@@ -124,10 +131,14 @@ export function App() {
     };
     save(it);
     setLastAdded(it.id);
-    const lands: View = onToday(it, today) ? "today" : onUpcoming(it, today) ? "upcoming" : "notebook";
+    const lands: View = onToday(it, today) ? "today" : onUpcoming(it, today) ? "upcoming" : "later";
     if (lands !== view) {
       showToast(
-        lands === "upcoming" && it.due ? `Added for ${formatDay(it.due, today).toLowerCase()}` : "Added to Notebook",
+        lands === "upcoming" && it.due
+          ? `Added for ${formatDay(it.due, today).toLowerCase()}`
+          : lands === "later"
+            ? "Saved for later"
+            : "Added to Today",
       );
     }
   };
@@ -153,6 +164,14 @@ export function App() {
 
   const pin = (it: Item) => update(it.id, { pinned: !it.pinned });
 
+  const park = (it: Item) => {
+    const before = { ...it };
+    update(it.id, { later: true, pinned: false, due: null, time: null });
+    showToast("Saved for later", () => save({ ...before, updatedAt: stamp() }));
+  };
+
+  const unpark = (it: Item) => update(it.id, { later: false });
+
   const del = (it: Item) => {
     update(it.id, { deleted: true });
     showToast("Deleted", () => update(it.id, { deleted: false }));
@@ -161,8 +180,8 @@ export function App() {
   const edit = (it: Item, raw: string) => {
     const p = parse(raw, today);
     const patch: Partial<Item> = { text: p.text || raw };
-    if (p.due) patch.due = p.due;
-    if (p.clearDate) Object.assign(patch, { due: null, time: null, repeat: null });
+    if (p.due) Object.assign(patch, { due: p.due, later: false });
+    if (p.clearDate) Object.assign(patch, { due: null, time: null, repeat: null, later: true, pinned: false });
     if (p.time) patch.time = p.time;
     if (p.repeat) patch.repeat = p.repeat;
     update(it.id, patch);
@@ -177,6 +196,8 @@ export function App() {
       isNew={it.id === lastAdded}
       onToggle={toggle}
       onPin={pin}
+      onPark={park}
+      onUnpark={unpark}
       onDelete={del}
       onEdit={edit}
     />
@@ -185,13 +206,13 @@ export function App() {
   // ---------- pages ----------
   let page: React.ReactNode;
   if (view === "today") {
-    const empty = !lists.carried.length && !lists.today.length;
+    const empty = !lists.carried.length && !lists.today.length && !lists.old.length;
     page = (
       <>
         {empty && (
           <div className="empty">
-            <strong>{lists.doneToday.length ? "All done for today." : "Nothing for today."}</strong>
-            <span>Write something with a date, or highlight something in the Notebook.</span>
+            <strong>{lists.doneToday.length ? "All done for today." : "Nothing to do."}</strong>
+            <span>Write it down and it lands here. Add a day like “friday” to save it for then, or “someday” to put it aside.</span>
           </div>
         )}
         {lists.carried.length > 0 && (
@@ -210,6 +231,15 @@ export function App() {
               </div>
             )}
             <ul className="list">{lists.today.map((i) => row(i, false))}</ul>
+          </section>
+        )}
+        {lists.old.length > 0 && (
+          <section className="section">
+            <button className="done-toggle" aria-expanded={showOld} onClick={() => setShowOld(!showOld)}>
+              <ChevronIcon />
+              Been a while · {lists.old.length}
+            </button>
+            {showOld && <ul className="list">{lists.old.map((i) => row(i))}</ul>}
           </section>
         )}
         {lists.doneToday.length > 0 && (
@@ -246,14 +276,14 @@ export function App() {
       </div>
     );
   } else {
-    page = lists.notebook.length ? (
+    page = lists.later.length ? (
       <section className="section">
-        <ul className="list">{lists.notebook.map((i) => row(i))}</ul>
+        <ul className="list">{lists.later.map((i) => row(i))}</ul>
       </section>
     ) : (
       <div className="empty">
-        <strong>A blank page.</strong>
-        <span>Everything you write down lands here, newest at the bottom.</span>
+        <strong>Nothing set aside.</strong>
+        <span>Write “someday” after something to keep it here, off your list until you want it.</span>
       </div>
     );
   }
@@ -261,7 +291,7 @@ export function App() {
   const counts: Record<View, number> = {
     today: lists.carried.length + lists.today.length,
     upcoming: lists.upcoming.length,
-    notebook: lists.notebook.length,
+    later: lists.later.length,
   };
 
   return (
@@ -282,7 +312,7 @@ export function App() {
       <nav className="tabs" role="tablist" aria-label="Pages">
         {VIEWS.map((v) => (
           <button key={v} className="tab" role="tab" aria-selected={view === v} onClick={() => setView(v)}>
-            {v[0].toUpperCase() + v.slice(1)}
+            {VIEW_LABEL[v]}
             <span className="n">{counts[v] || ""}</span>
           </button>
         ))}

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { parse } from "./parse";
-import { completeItem, effectiveDue, isCarriedOver, onToday, onUpcoming, type Item } from "./items";
+import { beenAWhile, completeItem, effectiveDue, isCarriedOver, onLater, onToday, onUpcoming, type Item } from "./items";
 import { latestOccurrence, nextOccurrence } from "./repeat";
 
 // Tuesday, Nov 17 2026
@@ -95,12 +95,30 @@ describe("upkeep rules", () => {
     expect(onToday(item({ due: "2026-11-18" }), T)).toBe(false);
     expect(onUpcoming(item({ due: "2026-11-18" }), T)).toBe(true);
   });
-  test("missed items carry over for a week, then fall back to the Notebook", () => {
+  test("things written without a date go straight on Today", () => {
+    expect(onToday(item({ createdAt: new Date(2026, 10, 17, 9).getTime() }), T)).toBe(true);
+    expect(onUpcoming(item(), T)).toBe(false);
+    expect(onLater(item())).toBe(false);
+  });
+  test("missed items carry over and stay until done", () => {
     const yesterday = item({ due: "2026-11-16" });
     expect(onToday(yesterday, T)).toBe(true);
     expect(isCarriedOver(yesterday, T)).toBe(true);
-    expect(onToday(item({ due: "2026-11-10" }), T)).toBe(true); // 7 days
-    expect(onToday(item({ due: "2026-11-09" }), T)).toBe(false); // 8 days
+    expect(onToday(item({ due: "2026-10-01" }), T)).toBe(true); // weeks late: still on Today
+  });
+  test("after two weeks on Today, things fold into Been a while", () => {
+    expect(beenAWhile(item({ due: "2026-11-03" }), T)).toBe(false); // 14 days
+    expect(beenAWhile(item({ due: "2026-11-02" }), T)).toBe(true); // 15 days
+    expect(isCarriedOver(item({ due: "2026-11-02" }), T)).toBe(false);
+    expect(beenAWhile(item({ createdAt: new Date(2026, 10, 3, 12).getTime() }), T)).toBe(false);
+    expect(beenAWhile(item({ createdAt: new Date(2026, 10, 2, 12).getTime() }), T)).toBe(true);
+    expect(beenAWhile(item({ createdAt: new Date(2026, 9, 1).getTime(), pinned: true }), T)).toBe(false);
+  });
+  test("parked items (someday) stay off Today and Upcoming", () => {
+    expect(onToday(item({ later: true }), T)).toBe(false);
+    expect(onUpcoming(item({ later: true, due: "2026-11-20" }), T)).toBe(false);
+    expect(onLater(item({ later: true }))).toBe(true);
+    expect(p("learn to make bread someday")).toMatchObject({ text: "learn to make bread", clearDate: true });
   });
   test("repeating items never go stale; they show once at their latest date", () => {
     const plants = item({ due: "2026-10-04", repeat: "wd:0" });
