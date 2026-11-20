@@ -162,7 +162,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   position: fixed; left: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: -1;
   width: 100%; height: auto; aspect-ratio: 15 / 13;
   object-fit: cover; object-position: var(--focus-x, 50%) 62%;
-  opacity: var(--scene-opacity-dev, var(--scene-opacity-mobile)); mix-blend-mode: multiply;
+  opacity: calc(var(--scene-opacity-dev, var(--scene-opacity-mobile)) * var(--scene-k, 1)); mix-blend-mode: multiply;
   pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-user-drag: none;
 }
 @media (min-width: 720px) {
@@ -176,7 +176,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       calc(100vh - min(1280px, 100vw) * 2 / 3),
       calc(var(--scene-clear-top) - min(1280px, 100vw) * 2 / 3 * var(--feature-top, 0.3))
     );
-    opacity: var(--scene-opacity-dev, var(--scene-opacity-desktop));
+    opacity: calc(var(--scene-opacity-dev, var(--scene-opacity-desktop)) * var(--scene-k, 1));
   }
 }
 @media (prefers-color-scheme: dark) {
