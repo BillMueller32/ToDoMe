@@ -4,7 +4,7 @@ import { ChevronIcon } from "./components/icons";
 import { ItemRow } from "./components/ItemRow";
 import { Login } from "./components/Login";
 import { Scenery } from "./components/Scenery";
-import { formatDay, formatShortDate, fromDateStr, isoWeek, todayStr, type DateStr } from "./lib/dates";
+import { formatDay, formatShortDate, fromDateStr, todayStr, type DateStr } from "./lib/dates";
 import {
   beenAWhile,
   byDueThenTime,
@@ -326,8 +326,7 @@ export function App() {
         <div>
           <h1 className="day">{fromDateStr(today).toLocaleDateString(undefined, { weekday: "long" })}</h1>
           <div className="stamp">
-            {fromDateStr(today).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · Week{" "}
-            {isoWeek(today)}
+            {fromDateStr(today).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
           </div>
         </div>
         <SyncBadge status={status} />

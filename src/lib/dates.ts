@@ -47,15 +47,6 @@ export function nextWeekday(from: DateStr, wd: number, strict = false): DateStr 
   return addDays(from, diff);
 }
 
-export function isoWeek(s: DateStr): number {
-  const d = fromDateStr(s);
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dn = t.getUTCDay() || 7;
-  t.setUTCDate(t.getUTCDate() + 4 - dn);
-  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
-  return Math.ceil(((t.getTime() - y0.getTime()) / 864e5 + 1) / 7);
-}
-
 export function formatTime(t: string | null | undefined): string {
   if (!t) return "";
   const [hh, mm] = t.split(":").map(Number);
