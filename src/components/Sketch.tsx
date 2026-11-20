@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type { DateStr } from "../lib/dates";
-import { sceneFor } from "../lib/scenes";
+import { drawingOf, sceneFor } from "../lib/scenes";
 
 interface Props {
   today: DateStr;
@@ -10,7 +10,7 @@ interface Props {
 
 /** Today's pencil sketch, fixed low on the page behind everything. */
 export function Sketch({ today, listEnd }: Props) {
-  const scene = sceneFor(today);
+  const drawing = drawingOf(sceneFor(today));
   const ref = useRef<HTMLDivElement>(null);
   const [dim, setDim] = useState(false);
 
@@ -47,10 +47,15 @@ export function Sketch({ today, listEnd }: Props) {
           </filter>
         </defs>
         <g filter="url(#pencil)" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-          {scene.strokes.map(([d, w], i) => (
+          {drawing.strokes.map(([d, w], i) => (
             <path key={i} d={d} strokeWidth={w} />
           ))}
         </g>
+        {drawing.notes.map((n, i) => (
+          <text key={i} x={n.x} y={n.y} fontSize={n.size ?? 9} textAnchor={n.anchor ?? "start"} className="sketch-note">
+            {n.text}
+          </text>
+        ))}
       </svg>
     </div>
   );

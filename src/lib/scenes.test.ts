@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { addDays } from "./dates";
-import { SCENES, sceneFor } from "./scenes";
+import { SCENES, drawingOf, sceneFor } from "./scenes";
 
 describe("daily sketch", () => {
   test("changes every day and cycles through every scene", () => {
@@ -12,5 +12,13 @@ describe("daily sketch", () => {
   });
   test("works for dates before the start of the cycle", () => {
     expect(SCENES).toContain(sceneFor("2025-06-01"));
+  });
+  test("every scene draws, the same way each time, inside its box", () => {
+    for (const sc of SCENES) {
+      const a = drawingOf(sc);
+      expect(a.strokes.length).toBeGreaterThan(0);
+      expect(a.notes.length).toBe(1);
+      expect(sc.draw()).toEqual(a);
+    }
   });
 });

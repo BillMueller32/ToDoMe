@@ -156,12 +156,13 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   position: fixed; left: 0; right: 0; z-index: -1; pointer-events: none;
   bottom: calc(80px + env(safe-area-inset-bottom, 0px)); height: min(300px, 36vh);
   color: var(--pencil); opacity: var(--sketch); transition: opacity 0.5s ease;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 45%, #000 88%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 45%, #000 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 42%, #000 94%, transparent 100%);
 }
 .sketch.dim { opacity: calc(var(--sketch) * 0.4); }
 .sketch svg { display: block; width: 100%; height: 100%; max-width: 980px; margin: 0 auto; }
 .sketch path { vector-effect: non-scaling-stroke; }
+.sketch-note { fill: currentColor; font-family: var(--font-serif); font-style: italic; letter-spacing: 0.02em; }
 @media (min-width: 720px) {
   .sketch { bottom: 0; height: min(400px, 46vh); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 45%); mask-image: linear-gradient(to bottom, transparent 0, #000 45%); }
 }
