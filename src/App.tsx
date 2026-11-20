@@ -3,7 +3,7 @@ import { Capture } from "./components/Capture";
 import { ChevronIcon } from "./components/icons";
 import { ItemRow } from "./components/ItemRow";
 import { Login } from "./components/Login";
-import { Sketch } from "./components/Sketch";
+import { Scenery } from "./components/Scenery";
 import { formatDay, formatShortDate, fromDateStr, isoWeek, todayStr, type DateStr } from "./lib/dates";
 import {
   beenAWhile,
@@ -25,15 +25,39 @@ const VIEWS: View[] = ["today", "upcoming", "later"];
 const VIEW_LABEL: Record<View, string> = { today: "Today", upcoming: "Upcoming", later: "Later" };
 const VIEW_KEY = "todome:view";
 
+/**
+ * The local date, kept current: it rolls over right at local midnight, and is re-checked
+ * whenever the app comes back (tab shown, window focused, page restored from the back cache).
+ */
 function useToday(): DateStr {
   const [today, setToday] = useState(todayStr);
   useEffect(() => {
     const check = () => setToday(todayStr());
-    const t = window.setInterval(check, 60_000);
-    document.addEventListener("visibilitychange", check);
+    const tick = window.setInterval(check, 60_000);
+    let midnight = 0;
+    const armMidnight = () => {
+      const now = new Date();
+      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+      midnight = window.setTimeout(() => {
+        check();
+        armMidnight();
+      }, next.getTime() - now.getTime());
+    };
+    armMidnight();
+    const resume = () => {
+      check();
+      clearTimeout(midnight);
+      armMidnight(); // timers can stall while the phone sleeps; aim again from now
+    };
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("focus", resume);
+    window.addEventListener("pageshow", resume);
     return () => {
-      clearInterval(t);
-      document.removeEventListener("visibilitychange", check);
+      clearInterval(tick);
+      clearTimeout(midnight);
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("focus", resume);
+      window.removeEventListener("pageshow", resume);
     };
   }, []);
   return today;
@@ -61,7 +85,6 @@ export function App() {
   const [toast, setToast] = useState<Toast | null>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
   const captureRef = useRef<HTMLInputElement>(null);
-  const listEnd = useRef<HTMLDivElement>(null);
 
   const setView = useCallback((v: View) => {
     setViewState(v);
@@ -298,7 +321,7 @@ export function App() {
 
   return (
     <div className="page">
-      <Sketch today={today} listEnd={listEnd} />
+      <Scenery today={today} />
       <header className="head">
         <div>
           <h1 className="day">{fromDateStr(today).toLocaleDateString(undefined, { weekday: "long" })}</h1>
@@ -321,10 +344,7 @@ export function App() {
         ))}
       </nav>
 
-      <main>
-        {page}
-        <div ref={listEnd} />
-      </main>
+      <main>{page}</main>
 
       <footer className="foot">
         <span>ToDoMe</span>

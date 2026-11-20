@@ -1,5 +1,5 @@
 /* Layout: one narrow page. Capture sits at thumb height on phones and at the top of the page on
-   laptops. The one bit of art: a faint pencil sketch at the bottom that changes every day. */
+   laptops. The one bit of art: a faint pencil illustration behind the list that changes every day. */
 :root {
   --paper: #f7f5f0;
   --sheet: #ffffff;
@@ -7,8 +7,8 @@
   --ink-2: #4a453f;
   --muted: #6b655e;
   --rule: #e3ded5;
-  --pencil: #6f6a64;
-  --sketch: 0.5;
+  /* How strongly today's illustration shows. Raise for stronger, lower for fainter. */
+  --scene-opacity: 0.16;
   --check: #3a3530;
   --accent: #4f6b3a;
   --accent-soft: rgba(79, 107, 58, 0.1);
@@ -31,8 +31,7 @@
     --ink-2: #c9c3ba;
     --muted: #9a948c;
     --rule: #34312c;
-    --pencil: #a39d94;
-    --sketch: 0.4;
+    --scene-opacity: 0.14;
     --check: #ece7e0;
     --accent: #a9c08f;
     --accent-soft: rgba(169, 192, 143, 0.14);
@@ -150,22 +149,38 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .kbd-hint { display: flex; }
 }
 
-/* Today's pencil sketch: fixed low on the screen behind the list, fading in from the top.
-   It steps back (.dim) once the list reaches it. */
-.sketch {
-  position: fixed; left: 0; right: 0; z-index: -1; pointer-events: none;
-  bottom: calc(80px + env(safe-area-inset-bottom, 0px)); height: min(300px, 36vh);
-  color: var(--pencil); opacity: var(--sketch); transition: opacity 0.5s ease;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 42%, #000 94%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 42%, #000 94%, transparent 100%);
+/* Today's illustration, fixed behind the page (it never scrolls, so the list moves over it).
+   White paper is blended away with multiply, so only the pencil lines darken the cream.
+   Phones: full width, a little larger than the screen, cropped at the sides around --focus-x.
+   Laptops: the whole picture, centred along the bottom of the window. */
+.scene {
+  position: fixed; left: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: -1;
+  width: 100%; height: auto; aspect-ratio: 15 / 13;
+  object-fit: cover; object-position: var(--focus-x, 50%) 62%;
+  opacity: var(--scene-opacity); mix-blend-mode: multiply;
+  pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-user-drag: none;
 }
-.sketch.dim { opacity: calc(var(--sketch) * 0.4); }
-.sketch svg { display: block; width: 100%; height: 100%; max-width: 980px; margin: 0 auto; }
-.sketch path { vector-effect: non-scaling-stroke; }
-.sketch-note { fill: currentColor; font-family: var(--font-serif); font-style: italic; letter-spacing: 0.02em; }
 @media (min-width: 720px) {
-  .sketch { bottom: 0; height: min(400px, 46vh); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 45%); mask-image: linear-gradient(to bottom, transparent 0, #000 45%); }
+  .scene {
+    left: 50%; bottom: 0; transform: translateX(-50%);
+    width: min(1280px, 100%); aspect-ratio: 3 / 2; object-fit: contain; object-position: 50% 100%;
+  }
 }
+@media (prefers-color-scheme: dark) {
+  /* On a dark page: invert so the lines are light, and screen so black paper disappears. */
+  .scene { filter: invert(1); mix-blend-mode: screen; }
+}
+
+/* Development only: the scene picker and opacity slider (not in the built app). */
+.dev-scene {
+  position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); right: 8px; z-index: 50;
+  display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; max-width: calc(100% - 16px);
+  padding: 6px 10px; border: 1px dashed var(--muted); border-radius: 10px; background: var(--sheet);
+  font-size: 12px; color: var(--ink-2); box-shadow: var(--shadow);
+}
+.dev-scene label { display: inline-flex; gap: 6px; align-items: center; }
+.dev-scene input[type="range"] { width: 110px; }
+.dev-scene button { text-decoration: underline; }
 
 /* Sections & list */
 .section { display: flex; flex-direction: column; }
