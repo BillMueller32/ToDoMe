@@ -1,5 +1,3 @@
-import "@fontsource-variable/geist";
-import "@fontsource-variable/geist-mono";
 import "./styles.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -19,7 +17,7 @@ if ("serviceWorker" in navigator && import.meta.env.PROD) {
   // Store this version on the device right away, so the very next open works offline.
   window.addEventListener("load", async () => {
     await new Promise((r) => setTimeout(r, 3000)); // let fonts and icons finish loading
-    const urls = new Set<string>(["/", "/manifest.webmanifest", "/icons/icon.svg"]);
+    const urls = new Set<string>(["/", "/manifest.webmanifest", "/icons/favicon-64.png"]);
     for (const e of performance.getEntriesByType("resource")) {
       const u = new URL(e.name);
       if (u.origin === location.origin && !u.pathname.startsWith("/api/")) urls.add(u.pathname);

@@ -29,10 +29,11 @@ ToDoMe: a personal, single-user to-do notebook. One page, three views (Today, Up
 - `src/lib/items.ts` — the `Item` model and the upkeep rules: anything written without a date goes straight on Today; dated items join Today on their day; missed items carry over and stay until done; anything on Today longer than `FOLD_AFTER_DAYS` (14) folds into a collapsed "Been a while" section; "someday" parks an item in Later (`later: true`); repeats collapse to their latest occurrence; completing a repeat advances it and stores a done copy.
 - `src/lib/store.ts` — local-first store (localStorage) + background sync. Each change bumps `updatedAt`; server keeps the newest per item (last write wins) and gives every write a `seq`; devices pull `seq > cursor`. Deletes are tombstones (`deleted: true`).
 - Auth: one password in the Worker secret `APP_PASSWORD`; login sets a long-lived HttpOnly cookie derived from it (changing the password signs out every device).
+- `src/lib/scenes.ts` + `src/components/Sketch.tsx` — the faint pencil sketch at the bottom of the page. One scene per day in turn (`sceneFor`); add a scene by appending strokes to `SCENES`. It dims once the list reaches it.
 - `public/sw.js` — service worker: app opens instantly/offline from cache, refreshes in the background.
 
 ## Conventions
 
 - Dates are local `YYYY-MM-DD` strings; times are `HH:MM` 24h.
-- Plain CSS in `src/styles.css` with tokens on `:root` (light) and a dark override. No UI framework.
+- Plain CSS in `src/styles.css` with tokens on `:root` (light) and a dark override. No UI framework. System fonts only: serif (`--font-serif`, New York on Apple devices) for the day and the writing line, system sans for the rest.
 - Never commit secrets; `.dev.vars` is gitignored.
