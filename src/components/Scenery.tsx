@@ -34,8 +34,8 @@ export function Scenery({ today }: { today: DateStr }) {
   useEffect(() => {
     if (!DEV) return;
     const root = document.documentElement.style;
-    if (devOpacity) root.setProperty("--scene-opacity", devOpacity);
-    else root.removeProperty("--scene-opacity");
+    if (devOpacity) root.setProperty("--scene-opacity-dev", devOpacity);
+    else root.removeProperty("--scene-opacity-dev");
   }, [devOpacity]);
 
   return (
@@ -47,7 +47,7 @@ export function Scenery({ today }: { today: DateStr }) {
         aria-hidden="true"
         draggable={false}
         decoding="async"
-        style={{ "--focus-x": `${scene.focusX}%` } as React.CSSProperties}
+        style={{ "--focus-x": `${scene.focusX}%`, "--feature-top": scene.featureTop } as React.CSSProperties}
       />
       {DEV && (
         <DevSceneControls
@@ -67,14 +67,18 @@ export function Scenery({ today }: { today: DateStr }) {
   );
 }
 
-/** Development only (`bun run dev`): pick a scene and try its faintness. Not in the built app. */
+/**
+ * Development only (`bun run dev`): pick a scene and try its faintness. The slider overrides
+ * the current device's opacity (mobile or desktop) until reset. Not in the built app.
+ */
 function DevSceneControls(p: {
   scene: string;
   opacity: string;
   onScene: (v: string) => void;
   onOpacity: (v: string) => void;
 }) {
-  const shown = p.opacity || getComputedStyle(document.documentElement).getPropertyValue("--scene-opacity").trim();
+  const img = document.querySelector<HTMLImageElement>("img.scene");
+  const shown = p.opacity || (img ? getComputedStyle(img).opacity : "");
   return (
     <div className="dev-scene" role="group" aria-label="Scene preview (development only)">
       <label>
