@@ -1,38 +1,45 @@
-/* Layout: one narrow page of a dot-grid notebook. Capture sits at thumb height on phones and
-   at the top of the page on laptops. The one bold thing: the highlighter that marks Today. */
+/* Layout: one narrow page. Capture sits at thumb height on phones and at the top of the page on
+   laptops. The one bit of art: a faint pencil sketch at the bottom that changes every day. */
 :root {
-  --paper: #f5f6f8;
+  --paper: #f7f5f0;
   --sheet: #ffffff;
-  --ink: #1a2030;
-  --ink-2: #4a5265;
-  --muted: #7d8597;
-  --rule: #e2e5eb;
-  --dot: #d3d8e1;
-  --accent: #2c46d1;
-  --accent-soft: rgba(44, 70, 209, 0.09);
-  --hl: rgba(255, 219, 64, 0.62);
-  --hl-strong: #e0b400;
-  --danger: #c0392b;
-  --shadow: 0 1px 2px rgba(20, 28, 48, 0.06), 0 8px 24px rgba(20, 28, 48, 0.07);
-  --font-ui: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --ink: #2a2622;
+  --ink-2: #4a453f;
+  --muted: #6b655e;
+  --rule: #e3ded5;
+  --pencil: #6f6a64;
+  --sketch: 0.5;
+  --check: #3a3530;
+  --accent: #4f6b3a;
+  --accent-soft: rgba(79, 107, 58, 0.1);
+  --hl: rgba(159, 184, 132, 0.38);
+  --hl-strong: #4f6b3a;
+  --toast-accent: #b9cfa0;
+  --danger: #b3402a;
+  --shadow: 0 1px 2px rgba(42, 38, 34, 0.05), 0 8px 24px rgba(42, 38, 34, 0.08);
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  --font-serif: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--font-ui);
   --col: 620px;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #101217;
-    --sheet: #171a21;
-    --ink: #e9ecf3;
-    --ink-2: #b6bccb;
-    --muted: #858da0;
-    --rule: #262a34;
-    --dot: #252a35;
-    --accent: #93a4ff;
-    --accent-soft: rgba(147, 164, 255, 0.12);
-    --hl: rgba(255, 208, 40, 0.3);
-    --hl-strong: #ffd34d;
-    --danger: #ff8a7a;
+    --paper: #1b1a18;
+    --sheet: #252320;
+    --ink: #ece7e0;
+    --ink-2: #c9c3ba;
+    --muted: #9a948c;
+    --rule: #34312c;
+    --pencil: #a39d94;
+    --sketch: 0.4;
+    --check: #ece7e0;
+    --accent: #a9c08f;
+    --accent-soft: rgba(169, 192, 143, 0.14);
+    --hl: rgba(169, 192, 143, 0.28);
+    --hl-strong: #a9c08f;
+    --toast-accent: #3e5a36;
+    --danger: #f08a75;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
   }
@@ -43,8 +50,6 @@ html, body { min-height: 100%; }
 body {
   margin: 0;
   background-color: var(--paper);
-  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 1.2px);
-  background-size: 22px 22px;
   color: var(--ink);
   font-family: var(--font-ui);
   font-size: 16px;
@@ -58,6 +63,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
 .page {
+  position: relative;
   max-width: var(--col);
   margin: 0 auto;
   padding-top: calc(28px + env(safe-area-inset-top, 0px));
@@ -69,13 +75,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
 /* Header */
 .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.day { font-size: 34px; font-weight: 650; letter-spacing: -0.035em; line-height: 1; margin: 0; }
-.stamp {
-  font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--muted); margin-top: 8px; font-variant-numeric: tabular-nums; white-space: nowrap;
-}
+.day { font-family: var(--font-serif); font-size: 38px; font-weight: 500; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+.stamp { font-size: 13px; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sync {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  font-size: 12px; color: var(--muted);
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; padding-bottom: 2px;
 }
 .sync i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); opacity: 0.5; }
@@ -88,7 +91,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   position: relative; padding: 6px 0 11px; font-weight: 550; color: var(--muted);
   display: inline-flex; align-items: baseline; gap: 7px; transition: color 0.15s;
 }
-.tab .n { font-family: var(--font-mono); font-size: 12px; font-weight: 400; }
+.tab .n { font-size: 13px; font-weight: 400; color: var(--muted); }
 .tab[aria-selected="true"] { color: var(--ink); }
 .tab[aria-selected="true"]::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink); border-radius: 2px;
@@ -100,7 +103,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .capture-row { display: flex; align-items: center; gap: 8px; }
 .capture input {
   flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink);
-  font: inherit; font-size: 17px; padding: 11px 0;
+  font: inherit; font-family: var(--font-serif); font-size: 19px; padding: 10px 0;
 }
 .capture input::placeholder { color: var(--muted); }
 .icon-btn {
@@ -108,9 +111,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   transition: background 0.15s, color 0.15s, opacity 0.15s; flex: none;
 }
 .icon-btn svg { width: 20px; height: 20px; }
-.add-btn { background: var(--ink); color: var(--paper); }
+.add-btn { background: var(--check); color: var(--paper); }
 .add-btn:hover { background: var(--accent); color: var(--sheet); }
-.add-btn:disabled { opacity: 0.2; cursor: default; background: var(--ink); color: var(--paper); }
+.add-btn:disabled { opacity: 0.2; cursor: default; background: var(--check); color: var(--paper); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 0 8px; }
 .chips:empty { display: none; }
 .chip {
@@ -147,10 +150,26 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   .kbd-hint { display: flex; }
 }
 
+/* Today's pencil sketch: fixed low on the screen behind the list, fading in from the top.
+   It steps back (.dim) once the list reaches it. */
+.sketch {
+  position: fixed; left: 0; right: 0; z-index: -1; pointer-events: none;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px)); height: min(300px, 36vh);
+  color: var(--pencil); opacity: var(--sketch); transition: opacity 0.5s ease;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 45%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 45%, #000 88%, transparent 100%);
+}
+.sketch.dim { opacity: calc(var(--sketch) * 0.4); }
+.sketch svg { display: block; width: 100%; height: 100%; max-width: 980px; margin: 0 auto; }
+.sketch path { vector-effect: non-scaling-stroke; }
+@media (min-width: 720px) {
+  .sketch { bottom: 0; height: min(400px, 46vh); -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 45%); mask-image: linear-gradient(to bottom, transparent 0, #000 45%); }
+}
+
 /* Sections & list */
 .section { display: flex; flex-direction: column; }
 .section-label {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
   display: flex; justify-content: space-between; align-items: baseline; padding: 14px 4px 6px;
 }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
@@ -183,7 +202,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .check::before { content: ""; position: absolute; inset: -11px; }
 @media (hover: hover) { .check:hover { border-color: var(--accent); background: var(--accent-soft); } }
 .check svg { width: 12px; height: 12px; opacity: 0; transform: scale(0.5); transition: all 0.18s; color: var(--sheet); }
-.item.done .check { background: var(--accent); border-color: var(--accent); }
+.item.done .check { background: var(--check); border-color: var(--check); }
 .item.done .check svg { opacity: 1; transform: scale(1); }
 
 .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding-top: 0; }
@@ -221,7 +240,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .act.on { color: var(--hl-strong); }
 
 .done-toggle {
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  font-size: 14px; color: var(--muted);
   padding: 16px 4px 6px; display: inline-flex; gap: 8px; align-items: center; align-self: flex-start;
 }
 .done-toggle svg { width: 12px; height: 12px; transition: transform 0.2s; }
@@ -241,20 +260,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   white-space: nowrap;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-.toast button { font-weight: 600; color: var(--hl-strong); padding: 4px 8px; border-radius: 8px; }
+.toast button { font-weight: 600; color: var(--toast-accent); padding: 4px 8px; border-radius: 8px; }
 @media (min-width: 720px) { .toast { bottom: 32px; } }
 
 /* Sign in */
 .login { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; }
 .login form { width: min(360px, 100%); display: flex; flex-direction: column; gap: 14px; }
-.login h1 { font-size: 34px; font-weight: 650; letter-spacing: -0.035em; margin: 0; }
+.login h1 { font-family: var(--font-serif); font-size: 38px; font-weight: 500; letter-spacing: -0.02em; margin: 0; }
 .login p { margin: 0; color: var(--muted); }
 .login input {
   font: inherit; font-size: 17px; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--rule);
   background: var(--sheet); color: var(--ink); outline: none;
 }
 .login input:focus { border-color: var(--accent); }
-.login button { background: var(--ink); color: var(--paper); border-radius: 12px; padding: 13px; font-weight: 600; }
+.login button { background: var(--check); color: var(--paper); border-radius: 12px; padding: 13px; font-weight: 600; }
 .login .err { color: var(--danger); font-size: 14px; }
 
 @keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }

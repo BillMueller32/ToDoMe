@@ -3,6 +3,7 @@ import { Capture } from "./components/Capture";
 import { ChevronIcon } from "./components/icons";
 import { ItemRow } from "./components/ItemRow";
 import { Login } from "./components/Login";
+import { Sketch } from "./components/Sketch";
 import { formatDay, formatShortDate, fromDateStr, isoWeek, todayStr, type DateStr } from "./lib/dates";
 import {
   beenAWhile,
@@ -60,6 +61,7 @@ export function App() {
   const [toast, setToast] = useState<Toast | null>(null);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
   const captureRef = useRef<HTMLInputElement>(null);
+  const listEnd = useRef<HTMLDivElement>(null);
 
   const setView = useCallback((v: View) => {
     setViewState(v);
@@ -296,6 +298,7 @@ export function App() {
 
   return (
     <div className="page">
+      <Sketch today={today} listEnd={listEnd} />
       <header className="head">
         <div>
           <h1 className="day">{fromDateStr(today).toLocaleDateString(undefined, { weekday: "long" })}</h1>
@@ -318,7 +321,10 @@ export function App() {
         ))}
       </nav>
 
-      <main>{page}</main>
+      <main>
+        {page}
+        <div ref={listEnd} />
+      </main>
 
       <footer className="foot">
         <span>ToDoMe</span>
