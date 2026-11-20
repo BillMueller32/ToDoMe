@@ -7,8 +7,12 @@
   --ink-2: #4a453f;
   --muted: #6b655e;
   --rule: #e3ded5;
-  /* How strongly today's illustration shows. Raise for stronger, lower for fainter. */
-  --scene-opacity: 0.16;
+  /* Today's illustration: how strongly it shows on phones and on laptops (raise = stronger).
+     --scene-clear-top: on laptops, the drawing's highest feature never rises above this line
+     (just under the writing box and keyboard hints). */
+  --scene-opacity-mobile: 0.144;
+  --scene-opacity-desktop: 0.128;
+  --scene-clear-top: 244px;
   --check: #3a3530;
   --accent: #4f6b3a;
   --accent-soft: rgba(79, 107, 58, 0.1);
@@ -31,7 +35,8 @@
     --ink-2: #c9c3ba;
     --muted: #9a948c;
     --rule: #34312c;
-    --scene-opacity: 0.14;
+    --scene-opacity-mobile: 0.126;
+    --scene-opacity-desktop: 0.112;
     --check: #ece7e0;
     --accent: #a9c08f;
     --accent-soft: rgba(169, 192, 143, 0.14);
@@ -157,13 +162,21 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   position: fixed; left: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: -1;
   width: 100%; height: auto; aspect-ratio: 15 / 13;
   object-fit: cover; object-position: var(--focus-x, 50%) 62%;
-  opacity: var(--scene-opacity); mix-blend-mode: multiply;
+  opacity: var(--scene-opacity-dev, var(--scene-opacity-mobile)); mix-blend-mode: multiply;
   pointer-events: none; user-select: none; -webkit-user-select: none; -webkit-user-drag: none;
 }
 @media (min-width: 720px) {
+  /* Sits on the bottom of the window, but drops lower when needed so its highest feature
+     (--feature-top, per scene) starts below --scene-clear-top. Image height = width × 2/3. */
   .scene {
-    left: 50%; bottom: 0; transform: translateX(-50%);
+    left: 50%; transform: translateX(-50%);
     width: min(1280px, 100%); aspect-ratio: 3 / 2; object-fit: contain; object-position: 50% 100%;
+    bottom: auto;
+    top: max(
+      calc(100vh - min(1280px, 100vw) * 2 / 3),
+      calc(var(--scene-clear-top) - min(1280px, 100vw) * 2 / 3 * var(--feature-top, 0.3))
+    );
+    opacity: var(--scene-opacity-dev, var(--scene-opacity-desktop));
   }
 }
 @media (prefers-color-scheme: dark) {

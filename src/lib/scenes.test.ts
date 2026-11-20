@@ -18,7 +18,7 @@ describe("daily scene", () => {
   });
 
   test("still cycles fully with a larger manifest (e.g. 30 scenes)", () => {
-    const many: Scene[] = Array.from({ length: 30 }, (_, i) => ({ id: `s${i}`, src: "", focusX: 50 }));
+    const many: Scene[] = Array.from({ length: 30 }, (_, i) => ({ id: `s${i}`, src: "", focusX: 50, featureTop: 0.3 }));
     const run = many.map((_, i) => sceneFor(addDays("2027-03-01", i), many).id);
     expect(new Set(run).size).toBe(30);
   });
@@ -34,6 +34,8 @@ describe("daily scene", () => {
       expect(existsSync(join(import.meta.dir, "../../public", s.src))).toBe(true);
       expect(s.focusX).toBeGreaterThanOrEqual(0);
       expect(s.focusX).toBeLessThanOrEqual(100);
+      expect(s.featureTop).toBeGreaterThan(0);
+      expect(s.featureTop).toBeLessThan(1);
     }
   });
 });
